@@ -20,7 +20,7 @@ public class UrlShortenerService : IUrlShortenerService
             ? GenerateAlias()
             : request.CustomAlias.Trim();
 
-        if (!IsThisThingValidOrNot(alias))
+        if (!IsValidAlias(alias))
             throw new ArgumentException("Alias may only contain letters, numbers, and hyphens (2–64 characters).");
 
         var exists = await _db.ShortenedUrls.AnyAsync(u => u.Alias == alias);
@@ -97,7 +97,7 @@ public class UrlShortenerService : IUrlShortenerService
         return RandomNumberGenerator.GetString(choices, 16);
     }
 
-    private static bool IsThisThingValidOrNot(string alias)
+    private static bool IsValidAlias(string alias)
     {
         if (alias.Length < 2 || alias.Length > 64)
             return false;
