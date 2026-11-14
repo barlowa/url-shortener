@@ -135,13 +135,7 @@ public class UrlShortenerServiceTests : IDisposable
         await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://three.com", CustomAlias = "three" },
             BaseUrl);
 
-        var paginationParams = new PaginationParams
-        {
-            PageNumber = 1,
-            PageSize = 3
-        };
-
-        var results = (await _sut.GetAllAsync(BaseUrl, paginationParams)).Data;
+        var results = (await _sut.GetAllAsync(BaseUrl, new PaginationParams())).Data;
 
         results.Should().HaveCount(3);
         results.Should().Contain(r => r.Alias == "one");
@@ -155,13 +149,7 @@ public class UrlShortenerServiceTests : IDisposable
         await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://example.com", CustomAlias = "abc" },
             BaseUrl);
 
-        var paginationParams = new PaginationParams
-        {
-            PageNumber = 1,
-            PageSize = 3
-        };
-
-        var results = (await _sut.GetAllAsync(BaseUrl, paginationParams)).Data.ToList();
+        var results = (await _sut.GetAllAsync(BaseUrl, new PaginationParams())).Data.ToList();
 
         results.Single().ShortUrl.Should().Be($"{BaseUrl}/abc");
     }
@@ -169,12 +157,7 @@ public class UrlShortenerServiceTests : IDisposable
     [Fact]
     public async Task GetAllAsync_WhenEmpty_ReturnsEmptyList()
     {
-        var paginationParams = new PaginationParams
-        {
-            PageNumber = 1,
-            PageSize = 3
-        };
-        var results = await _sut.GetAllAsync(BaseUrl, paginationParams);
+        var results = await _sut.GetAllAsync(BaseUrl, new PaginationParams());
 
         results.Data.Should().BeEmpty();
     }
