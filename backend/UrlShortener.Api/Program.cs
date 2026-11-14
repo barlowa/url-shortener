@@ -34,6 +34,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
+Console.WriteLine($"Database path: {Path.GetFullPath(dbPath)}");
+Console.WriteLine($"Database exists: {File.Exists(Path.GetFullPath(dbPath))}");
+
 // --- Ensure DB is created / migrated on startup ---
 using (var scope = app.Services.CreateScope())
 {
