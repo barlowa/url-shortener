@@ -112,8 +112,7 @@ public class UrlShortenerServiceTests : IDisposable
             CustomAlias = "test-alias"
         }, BaseUrl);
 
-        var result = _sut.GetFullUrlAsync("test-alias").GetAwaiter().GetResult();
-
+        var result = await _sut.GetFullUrlAsync("test-alias");
         result.Should().Be("https://example.com");
     }
 
@@ -184,7 +183,7 @@ public class UrlShortenerServiceTests : IDisposable
         results.Data.Should().Contain(r => r.Alias == "two");
         results.Data.Should().Contain(r => r.Alias == "three");
     }
-    
+
     [Fact]
     //test to see if the second page returns
     public async Task GetAllAsync_Change_Page()
