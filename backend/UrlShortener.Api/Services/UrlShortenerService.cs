@@ -53,9 +53,10 @@ public class UrlShortenerService : IUrlShortenerService
         return entry?.FullUrl;
     }
 
-    public async Task<IEnumerable<UrlListItem>> GetAllAsync(string baseUrl)
+    public async Task<PagedResponse<UrlListItem>> GetAllAsync(string baseUrl, PaginationParams paginationParams)
     {
-        return await _db.ShortenedUrls
+        // get the items from the db
+        var listItems = _db.ShortenedUrls
             .AsNoTracking()
             .OrderByDescending(u => u.CreatedAt)
             .Select(u => new UrlListItem
@@ -63,8 +64,30 @@ public class UrlShortenerService : IUrlShortenerService
                 Alias = u.Alias,
                 FullUrl = u.FullUrl,
                 ShortUrl = $"{baseUrl}/{u.Alias}"
-            })
+            });
+
+
+        //work out boundaries 
+        var totalRecords = await listItems.CountAsync();
+        var totalPages = (int)Math.Ceiling((double)totalRecords / paginationParams.PageSize);
+
+        // exception if user selects more than maximum amount of pages
+        if (paginationParams.PageNumber > totalPages && totalPages > 0)
+            throw new ArgumentException(
+                $"Maximum page number is {totalPages}, reduce PageNumber request from {paginationParams.PageSize}");
+
+        // select items based on current page 
+        var items = await listItems
+            .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+            .Take(paginationParams.PageSize)
             .ToListAsync();
+
+        return new PagedResponse<UrlListItem>(
+            items,
+            paginationParams.PageNumber,
+            paginationParams.PageSize,
+            totalRecords,
+            totalPages);
     }
 
     public async Task<bool> DeleteAsync(string alias)

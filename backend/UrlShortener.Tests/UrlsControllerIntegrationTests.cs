@@ -149,13 +149,15 @@ public class UrlsControllerIntegrationTests : IClassFixture<WebApplicationFactor
         var client = CreateClient();
         await client.PostAsJsonAsync("/shorten", new { fullUrl = "https://one.com", customAlias = "list-one" });
         await client.PostAsJsonAsync("/shorten", new { fullUrl = "https://two.com", customAlias = "list-two" });
+        await client.PostAsJsonAsync("/shorten", new { fullUrl = "https://three.com", customAlias = "list-three" });
 
         var response = await client.GetAsync("/urls");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var body = await response.Content.ReadFromJsonAsync<List<UrlListItem>>();
-        body!.Should().Contain(u => u.Alias == "list-one");
-        body.Should().Contain(u => u.Alias == "list-two");
+        var body = await response.Content.ReadFromJsonAsync<PagedResponse<UrlListItem>>();
+        body!.Data.Should().Contain(u => u.Alias == "list-one");
+        body.Data.Should().Contain(u => u.Alias == "list-two");
+        body.Data.Should().Contain(u => u.Alias == "list-three");
     }
 
     // --- DELETE /{alias} ---
