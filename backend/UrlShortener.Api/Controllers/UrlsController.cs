@@ -19,8 +19,30 @@ public class UrlsController : ControllerBase
     // POST /shorten
     [HttpPost("shorten")]
     public async Task<IActionResult> Shorten([FromBody] ShortenUrlRequest request)
-    {        
-                            return Ok();
+    {
+        var baseUrl = GetBaseUrl();
+
+        try
+        {
+            // use the shortenasync service 
+            var shortened = await _service.ShortenAsync(request, baseUrl);
+
+            //if successful, send 201 response with the shortened uri which was created and the response
+            return Created(shortened.ShortUrl, shortened);
+        }
+
+        // look for invalid alias - throw 400
+        catch (ArgumentException e)
+        {
+            return BadRequest(new { error = e.Message });
+        }
+
+        // look for duplicate alias  - throw 400
+        catch (InvalidOperationException e)
+        {
+            return BadRequest(new { error = e.Message });
+        }
+        //middleware to handle the rest (db exceptions etc.)
     }
 
     // GET /urls
