@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Api.Data;
 using UrlShortener.Api.Models;
@@ -73,15 +74,15 @@ public class UrlShortenerService : IUrlShortenerService
         // The method uses asynchronous operations to ensure non-blocking database access, which is important for scalability and performance in web applications.
         // The use of AsNoTracking in the GetFullUrlAsync and GetAllAsync methods improves performance for read-only queries by not tracking the returned entities in the DbContext's change tracker.
         // The GenerateAlias and IsValidAlias methods are placeholders for the logic to generate a unique alias and validate the alias format, respectively. The actual implementation of these methods would depend on the specific requirements of the URL shortening service.
-        
+
         ShortenedUrl entry = await _db.ShortenedUrls.FirstOrDefaultAsync(u => u.Alias == alias);
         if (entry is null)
             return false;
 
         _db.SaveChangesAsync();
         _db.ShortenedUrls.Remove(entry);
-       
-     
+
+
         return true;
     }
 
@@ -89,7 +90,11 @@ public class UrlShortenerService : IUrlShortenerService
 
     private static string GenerateAlias()
     {
-        return new string(""); // Placeholder for alias generation logic
+        //helper method used to generate an alias when one isn't provided by the user 
+        const string choices = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        //This generates a random alias with 16 characters.
+        return RandomNumberGenerator.GetString(choices, 16);
     }
 
     private static bool IsThisThingValidOrNot(string alias)
