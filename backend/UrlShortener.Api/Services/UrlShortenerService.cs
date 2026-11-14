@@ -68,20 +68,25 @@ public class UrlShortenerService : IUrlShortenerService
     }
 
     public async Task<bool> DeleteAsync(string alias)
-    {
         //method to delete a shortened url from the database based on the alias provided. It returns true if the deletion was successful, and false if no entry was found for the given alias.
         // It first queries the database for an entry with the specified alias. If found, it removes the entry and saves the changes to the database. If not found, it simply returns false.
         // The method uses asynchronous operations to ensure non-blocking database access, which is important for scalability and performance in web applications.
         // The use of AsNoTracking in the GetFullUrlAsync and GetAllAsync methods improves performance for read-only queries by not tracking the returned entities in the DbContext's change tracker.
         // The GenerateAlias and IsValidAlias methods are placeholders for the logic to generate a unique alias and validate the alias format, respectively. The actual implementation of these methods would depend on the specific requirements of the URL shortening service.
+    {
+        // added a variable 
+        var entry = await _db.ShortenedUrls.FirstOrDefaultAsync(u => u.Alias == alias);
 
-        ShortenedUrl entry = await _db.ShortenedUrls.FirstOrDefaultAsync(u => u.Alias == alias);
         if (entry is null)
             return false;
 
-        _db.SaveChangesAsync();
+        //changed order of operations here - previously it was being saved before being removed so nothing was happening
+
+        //remove the entry
         _db.ShortenedUrls.Remove(entry);
 
+        //await and save to db
+        await _db.SaveChangesAsync();
 
         return true;
     }
