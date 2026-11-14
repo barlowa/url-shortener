@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UrlShortener.Api.Data;
 using UrlShortener.Api.Middleware;
@@ -8,10 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // --- Services ---
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "URL Shortener API", Version = "v1" });
-});
+builder.Services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new() { Title = "URL Shortener API", Version = "v1" }); });
 
 // SQLite persistence; database file lives in /data for Docker volume mounting
 var dbPath = builder.Configuration["DatabasePath"] ?? "urlshortener.db";
@@ -22,14 +20,31 @@ builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
 
 // CORS – allow the React dev server and any configured frontend origin
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:3000", "http://localhost:5173" ,"*"];
+                     ?? ["http://localhost:3000", "http://localhost:5173", "*"];
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
         policy.WithOrigins(allowedOrigins)
-              .AllowAnyMethod()
-              .AllowAnyHeader());
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
+// format the error messages from the model in a consistent way (e.g. if model throws an error, it will show the same structure used elsewhere).
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Values
+            .SelectMany(v => v.Errors)
+            .Select(e => e.ErrorMessage);
+
+        return new BadRequestObjectResult(new
+        {
+            error = string.Join("; ", errors)
+        });
+    };
 });
 
 var app = builder.Build();
@@ -60,4 +75,6 @@ app.MapControllers();
 app.Run();
 
 // Needed for WebApplicationFactory in integration tests
-public partial class Program { }
+public partial class Program
+{
+}
