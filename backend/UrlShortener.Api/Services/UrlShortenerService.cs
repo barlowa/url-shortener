@@ -72,19 +72,14 @@ public class UrlShortenerService : IUrlShortenerService
         var totalPages = (int)Math.Ceiling((double)totalRecords / paginationParams.PageSize);
 
         // exception if user selects more than maximum amount of pages
-        if (paginationParams.PageNumber >  totalPages &&  totalPages > 1)
-            throw new ArgumentException($"Maximum page number is {totalPages}, reduce PageNumber request from {paginationParams.PageSize}");
+        if (paginationParams.PageNumber > totalPages && totalPages > 0)
+            throw new ArgumentException(
+                $"Maximum page number is {totalPages}, reduce PageNumber request from {paginationParams.PageSize}");
 
         // select items based on current page 
         var items = await listItems
             .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
             .Take(paginationParams.PageSize)
-            .Select(urlItem => new UrlListItem
-            {
-                Alias = urlItem.Alias,
-                FullUrl = urlItem.FullUrl,
-                ShortUrl = $"{baseUrl}/{urlItem.Alias}"
-            })
             .ToListAsync();
 
         return new PagedResponse<UrlListItem>(
