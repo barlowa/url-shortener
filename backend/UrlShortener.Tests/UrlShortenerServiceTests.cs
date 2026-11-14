@@ -162,6 +162,51 @@ public class UrlShortenerServiceTests : IDisposable
         results.Data.Should().BeEmpty();
     }
 
+    [Fact]
+    //test to see if the first page returns
+    public async Task GetAllAsync_First_Page()
+    {
+        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://one.com", CustomAlias = "one" }, BaseUrl);
+        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://two.com", CustomAlias = "two" }, BaseUrl);
+        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://three.com", CustomAlias = "three" },
+            BaseUrl);
+
+        var results = (await _sut.GetAllAsync(BaseUrl, new PaginationParams
+        {
+            PageNumber = 1,
+            PageSize = 2
+        }));
+
+        results.Data.Should().HaveCount(2);
+        results.PageNumber.Should().Be(1);
+        results.PageSize.Should().Be(2);
+        results.TotalRecords.Should().Be(3);
+        results.Data.Should().Contain(r => r.Alias == "two");
+        results.Data.Should().Contain(r => r.Alias == "three");
+    }
+    
+    [Fact]
+    //test to see if the second page returns
+    public async Task GetAllAsync_Change_Page()
+    {
+        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://one.com", CustomAlias = "one" }, BaseUrl);
+        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://two.com", CustomAlias = "two" }, BaseUrl);
+        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://three.com", CustomAlias = "three" },
+            BaseUrl);
+
+        var results = (await _sut.GetAllAsync(BaseUrl, new PaginationParams
+        {
+            PageNumber = 2,
+            PageSize = 2
+        }));
+
+        results.Data.Should().HaveCount(1);
+        results.PageNumber.Should().Be(2);
+        results.PageSize.Should().Be(2);
+        results.TotalRecords.Should().Be(3);
+        results.Data.Should().Contain(r => r.Alias == "one");
+    }
+
 // --- DeleteAsync ---
 
     [Fact]
