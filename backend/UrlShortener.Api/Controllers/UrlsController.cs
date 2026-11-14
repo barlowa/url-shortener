@@ -48,11 +48,22 @@ public class UrlsController : ControllerBase
     // GET /urls
     [HttpGet("urls")]
     [ProducesResponseType(typeof(IEnumerable<UrlListItem>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll()
+    [ProducesResponseType(
+        typeof(PagedResponse<UrlListItem>),
+        StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResponse<UrlListItem>>> GetAll(
+        [FromQuery] PaginationParams paginationParams)
     {
-        var baseUrl = GetBaseUrl();
-        var urls = await _service.GetAllAsync(baseUrl);
-        return Ok(urls);
+        try
+        {
+            var baseUrl = GetBaseUrl();
+            var urls = await _service.GetAllAsync(baseUrl, paginationParams);
+            return Ok(urls);
+        }
+        catch (ArgumentException e)
+        {
+            return BadRequest(new { error = e.Message });
+        }
     }
 
     // GET /{alias}  — redirect
