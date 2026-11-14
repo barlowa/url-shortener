@@ -13,6 +13,7 @@ public class UrlShortenerServiceTests : IDisposable
     private readonly UrlShortenerService _sut;
     private const string BaseUrl = "http://localhost:8080";
 
+
     public UrlShortenerServiceTests()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -24,7 +25,7 @@ public class UrlShortenerServiceTests : IDisposable
 
     public void Dispose() => _db.Dispose();
 
-    // --- ShortenAsync ---
+// --- ShortenAsync ---
 
     [Fact]
     public async Task ShortenAsync_WithValidUrl_ReturnsShortUrl()
@@ -75,10 +76,10 @@ public class UrlShortenerServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData("a")]          // too short (1 char)
+    [InlineData("a")] // too short (1 char)
     [InlineData("this-alias-is-way-too-long-to-be-accepted-by-the-service-because-it-exceeds-64-characters")]
-    [InlineData("bad alias")]  // contains space
-    [InlineData("bad/alias")]  // contains slash
+    [InlineData("bad alias")] // contains space
+    [InlineData("bad/alias")] // contains slash
     public async Task ShortenAsync_WithInvalidAlias_ThrowsArgumentException(string alias)
     {
         var request = new ShortenUrlRequest
@@ -100,7 +101,7 @@ public class UrlShortenerServiceTests : IDisposable
         r1.Alias.Should().NotBe(r2.Alias);
     }
 
-    // --- GetFullUrlAsync ---
+// --- GetFullUrlAsync ---
 
     [Fact]
     public async Task GetFullUrlAsync_WithExistingAlias_ReturnsFullUrl()
@@ -111,7 +112,7 @@ public class UrlShortenerServiceTests : IDisposable
             CustomAlias = "test-alias"
         }, BaseUrl);
 
-        var result =  _sut.GetFullUrlAsync("test-alias").GetAwaiter().GetResult();
+        var result = _sut.GetFullUrlAsync("test-alias").GetAwaiter().GetResult();
 
         result.Should().Be("https://example.com");
     }
@@ -124,27 +125,43 @@ public class UrlShortenerServiceTests : IDisposable
         result.Should().BeNull();
     }
 
-    // --- GetAllAsync ---
+// --- GetAllAsync ---
 
     [Fact]
     public async Task GetAllAsync_ReturnsAllUrls()
     {
         await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://one.com", CustomAlias = "one" }, BaseUrl);
         await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://two.com", CustomAlias = "two" }, BaseUrl);
+        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://three.com", CustomAlias = "three" },
+            BaseUrl);
 
-        var results = (await _sut.GetAllAsync(BaseUrl)).ToList();
+        var paginationParams = new PaginationParams
+        {
+            PageNumber = 1,
+            PageSize = 3
+        };
 
-        results.Should().HaveCount(2);
+        var results = (await _sut.GetAllAsync(BaseUrl, paginationParams)).Data;
+
+        results.Should().HaveCount(3);
         results.Should().Contain(r => r.Alias == "one");
         results.Should().Contain(r => r.Alias == "two");
+        results.Should().Contain(r => r.Alias == "three");
     }
 
     [Fact]
     public async Task GetAllAsync_EachItemHasCorrectShortUrl()
     {
-        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://example.com", CustomAlias = "abc" }, BaseUrl);
+        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://example.com", CustomAlias = "abc" },
+            BaseUrl);
 
-        var results = (await _sut.GetAllAsync(BaseUrl)).ToList();
+        var paginationParams = new PaginationParams
+        {
+            PageNumber = 1,
+            PageSize = 3
+        };
+
+        var results = (await _sut.GetAllAsync(BaseUrl, paginationParams)).Data.ToList();
 
         results.Single().ShortUrl.Should().Be($"{BaseUrl}/abc");
     }
@@ -152,17 +169,23 @@ public class UrlShortenerServiceTests : IDisposable
     [Fact]
     public async Task GetAllAsync_WhenEmpty_ReturnsEmptyList()
     {
-        var results = await _sut.GetAllAsync(BaseUrl);
+        var paginationParams = new PaginationParams
+        {
+            PageNumber = 1,
+            PageSize = 3
+        };
+        var results = await _sut.GetAllAsync(BaseUrl, paginationParams);
 
-        results.Should().BeEmpty();
+        results.Data.Should().BeEmpty();
     }
 
-    // --- DeleteAsync ---
+// --- DeleteAsync ---
 
     [Fact]
     public async Task DeleteAsync_WithExistingAlias_ReturnsTrueAndRemovesEntry()
     {
-        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://example.com", CustomAlias = "to-delete" }, BaseUrl);
+        await _sut.ShortenAsync(new ShortenUrlRequest { FullUrl = "https://example.com", CustomAlias = "to-delete" },
+            BaseUrl);
 
         var deleted = await _sut.DeleteAsync("to-delete");
         var afterDelete = await _sut.GetFullUrlAsync("to-delete");
