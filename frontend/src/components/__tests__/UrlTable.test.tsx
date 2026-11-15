@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { UrlTable } from '../UrlTable';
+import UrlTable from '../UrlTable'
 import type { UrlListItem } from '../../types/api';
 
 const mockUrls: UrlListItem[] = [
