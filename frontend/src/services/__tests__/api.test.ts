@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { api } from '../api';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
+
 describe('api service', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -16,7 +18,7 @@ describe('api service', () => {
 
     const result = await api.shorten({ fullUrl: 'https://ex.com', customAlias: 'abc' });
 
-    expect(fetch).toHaveBeenCalledWith('/shorten', expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith(`${API_BASE}/shorten`, expect.objectContaining({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fullUrl: 'https://ex.com', customAlias: 'abc' }),
@@ -42,9 +44,9 @@ describe('api service', () => {
       json: async () => [],
     } as Response);
 
-    await api.listAll();
+    await api.listAll({ PageNumber: 1, PageSize: 10 });
 
-    expect(fetch).toHaveBeenCalledWith('/urls');
+    expect(fetch).toHaveBeenCalledWith(`${API_BASE}/urls?PageNumber=1&PageSize=10`);
   });
 
   it('delete sends DELETE to /{alias}', async () => {
@@ -56,7 +58,7 @@ describe('api service', () => {
 
     await api.delete('my-alias');
 
-    expect(fetch).toHaveBeenCalledWith('/my-alias', expect.objectContaining({ method: 'DELETE' }));
+    expect(fetch).toHaveBeenCalledWith(`${API_BASE}/my-alias`, expect.objectContaining({ method: 'DELETE' }));
   });
 
   it('delete throws on 404', async () => {

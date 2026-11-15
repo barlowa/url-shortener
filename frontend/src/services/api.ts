@@ -1,6 +1,11 @@
-import type { ShortenUrlRequest, ShortenUrlResponse, UrlListItem } from '../types/api';
+import type {
+  ShortenUrlRequest,
+  ShortenUrlResponse,
+  UrlListParams,
+  UrlListResponse,
+} from "../types/api";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -21,19 +26,39 @@ async function handleResponse<T>(res: Response): Promise<T> {
 export const api = {
   shorten(request: ShortenUrlRequest): Promise<ShortenUrlResponse> {
     return fetch(`${API_BASE}/shorten`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
     }).then((r) => handleResponse<ShortenUrlResponse>(r));
   },
 
-  listAll(): Promise<UrlListItem[]> {
-    return fetch(`${API_BASE}/urls`).then((r) => handleResponse<UrlListItem[]>(r));
+  listAll(params: UrlListParams): Promise<UrlListResponse> {
+    const queryString = new URLSearchParams(
+      Object.entries(params).reduce(
+        (acc, [key, value]) => {
+          if (value !== undefined) {
+            acc[key] = String(value);
+          }
+          return acc;
+        },
+        {} as Record<string, string>,
+      ),
+    ).toString();
+
+    return fetch(`${API_BASE}/urls?${queryString}`).then((r) =>
+      handleResponse<UrlListResponse>(r),
+    );
   },
 
   delete(alias: string): Promise<void> {
     return fetch(`${API_BASE}/${encodeURIComponent(alias)}`, {
-      method: 'DELETE',
+      method: "DELETE",
     }).then((r) => handleResponse<void>(r));
+  },
+
+  getAlias(alias: string): Promise<ShortenUrlResponse> {
+    return fetch(`${API_BASE}/${encodeURIComponent(alias)}`).then((r) =>
+      handleResponse<ShortenUrlResponse>(r),
+    );
   },
 };
