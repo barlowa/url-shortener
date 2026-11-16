@@ -24,7 +24,7 @@ the front end requires a .env file to be created in the root of the frontend dir
 VITE_API_BASE_URL=http://localhost:5000
 ```
 
-To use swagger on the backend, you can add an environment variable to the backend project. In Visual Studio, right click on the UrlShortener.Api project, select Properties, then Debug, and add the following environment variable:
+To use swagger on the backend, you can add an environment variable to the backend project. In your IDE, right click on the UrlShortener.Api project, select Properties, then Debug, and add the following environment variable:
 
 ```
 ASPNETCORE_ENVIRONMENT=Development
