@@ -4,6 +4,18 @@ A full-stack URL shortener built with **C# / ASP.NET Core 8** (backend) and **Re
 
 ---
 
+## Prerequisites
+
+For local development:
+
+- .NET 8 SDK
+- Node.js 20 or later
+- npm
+
+For containerised deployment:
+
+- Docker Desktop or Docker Engine with Docker Compose
+
 ## Project setup
 
 the front end requires a .env file to be created in the root of the frontend directory with the following content. Also see the .env.example file for reference.
@@ -17,6 +29,8 @@ To use swagger on the backend, you can add an environment variable to the backen
 ```
 ASPNETCORE_ENVIRONMENT=Development
 ```
+
+swagger can be found on localhost:5000/swagger/index.html when the backend is running.
 
 ## Front end setup
 
@@ -45,10 +59,20 @@ dotnet test
 ## Docker container
 
 ```bash
-# Build and run the backend and frontend in Docker.
-docker-compose up --build
-# this will stop and remove the containers, networks, and volumes created by docker-compose up
-docuker-compose down
+# Build and start both services
+docker compose up --build
+
+# Run in the background
+docker compose up --build -d
+
+# View logs
+docker compose logs -f
+
+# Stop and remove containers and networks
+docker compose down
+
+# WARNING: also deletes the persistent SQLite volume and its data
+docker compose down -v
 ```
 
 ## Architecture
