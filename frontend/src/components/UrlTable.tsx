@@ -24,7 +24,6 @@ export default function UrlTable({
     if (urls.length === 0) {
         return <p className="empty-state">No shortened URLs yet.</p>;
     }
-    console.log("totalPages", totalPages, "currentPage", currentPage);
 
     return (
         <div>

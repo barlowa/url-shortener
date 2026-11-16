@@ -1,33 +1,79 @@
-## Coding Assessment Tasks
-
-### Intro
-This is a URL shortener that has been created by a junior engineer. Your task is to review the solution, check that it works and find any errors they may have made as well as complete the fixes and TODOs listed below.
-
-This solution has been pre-seeded with data in the database already.
-
-Note that these are not necessarily in the order you will need to address them.
-
-### Fixes
-
-- **Fix Delete Behaviour:** The client has reported strange behaviour whenc clicking on delete on a URL, investigate and fix the issue
-- **Generate Alias:** Implement the ```generateAlias``` function
-- **UI Implementation:** Build out the UI to display the URLs on the main page
-
-### TODO
-
-- Add paging for for the retrieval of the URLs
-- Sort URLs by their creation date
-- Create the Docker commands to run the solution
-- Replace this ReadMe with an appropriate one
-
----
-
-
 # Snip – URL Shortener
 
 A full-stack URL shortener built with **C# / ASP.NET Core 8** (backend) and **React + TypeScript** (frontend), containerised with Docker.
 
 ---
+
+## Prerequisites
+
+For local development:
+
+- .NET 8 SDK
+- Node.js 20 or later
+- npm
+
+For containerised deployment:
+
+- Docker Desktop or Docker Engine with Docker Compose
+
+## Project setup
+
+the front end requires a .env file to be created in the root of the frontend directory with the following content. Also see the .env.example file for reference.
+
+```
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+To use swagger on the backend, you can add an environment variable to the backend project. In your IDE, right click on the UrlShortener.Api project, select Properties, then Debug, and add the following environment variable:
+
+```
+ASPNETCORE_ENVIRONMENT=Development
+```
+
+swagger can be found on localhost:5000/swagger/index.html when the backend is running.
+
+## Front end setup
+
+Run the following commands to build and run the project:
+
+```bash
+cd frontend
+npm install
+npm run dev
+npm run test
+# check the frontend is running at http://localhost:3000 and check the tests are passing
+```
+
+## Backend setup
+
+```bash
+cd backend/UrlShortener.Api
+dotnet restore
+dotnet build
+dotnet run
+# check the backend is running at http://localhost:5000 and check the tests are passing
+cd ../UrlShortener.Tests
+dotnet test
+```
+
+## Docker container
+
+```bash
+# Build and start both services
+docker compose up --build
+
+# Run in the background
+docker compose up --build -d
+
+# View logs
+docker compose logs -f
+
+# Stop and remove containers and networks
+docker compose down
+
+# WARNING: also deletes the persistent SQLite volume and its data
+docker compose down -v
+```
 
 ## Architecture
 
@@ -47,12 +93,12 @@ The frontend proxies API calls through Nginx in production, so there are no CORS
 
 The API matches the provided `openapi.yaml` contract exactly.
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/shorten` | Create a shortened URL |
-| `GET` | `/urls` | List all shortened URLs |
-| `GET` | `/{alias}` | Redirect to the full URL |
-| `DELETE` | `/{alias}` | Delete a shortened URL |
+| Method   | Path       | Description              |
+| -------- | ---------- | ------------------------ |
+| `POST`   | `/shorten` | Create a shortened URL   |
+| `GET`    | `/urls`    | List all shortened URLs  |
+| `GET`    | `/{alias}` | Redirect to the full URL |
+| `DELETE` | `/{alias}` | Delete a shortened URL   |
 
 ### POST /shorten
 
@@ -98,11 +144,11 @@ Returns `204 No Content` on success, `404` if alias not found.
 
 ## Design decisions & assumptions
 
-**Persistence** — SQLite via EF Core. Zero-dependency, file-based, and entirely sufficient for this exercise. The database file path is configurable via `DatabasePath` in `appsettings.json` or an environment variable, and is volume-mounted in Docker so data survives container restarts.
+**Persistence** — SQLite via EF Core. Zero-dependency, file-based. The database file path is configurable via `DatabasePath` in `appsettings.json` or an environment variable, and is volume-mounted in Docker so data survives container restarts.
 
 **Alias validation** — Aliases must be 2–64 characters, containing only letters, numbers, and hyphens. This mirrors typical URL shortener conventions and avoids characters that are awkward in URLs.
 
-**Random alias generation** — 
+**Random alias generation** —
 
 **Error handling** — A global exception middleware catches unhandled exceptions and returns a clean JSON `{ "error": "..." }` envelope. Domain errors (duplicate alias, invalid input) are surfaced as typed exceptions from the service layer, translated to 400s in the controller.
 

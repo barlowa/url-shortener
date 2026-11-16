@@ -4,7 +4,7 @@ import { ResultBanner } from './components/ResultBanner';
 import UrlTable from './components/UrlTable';
 
 export default function App() {
-  const { urls, loading, error, lastCreated, shorten, deleteUrl, clearLastCreated, pageNumber, pageSize, totalPages, setPageNumber, setPageSize } =
+  const { urls, loading, error, lastCreated, shorten, deleteUrl, clearLastCreated, pageNumber, pageSize, totalPages, setPageNumber, setPageSize, totalRecords } =
     useUrlShortener();
 
   return (
@@ -40,8 +40,8 @@ export default function App() {
         <section className="card" aria-labelledby="list-heading">
           <h2 id="list-heading" className="card__title">
             All shortened URLs
-            {urls.length > 0 && (
-              <span className="badge">{urls.length}</span>
+            {totalRecords > 0 && (
+              <span className="badge">{totalRecords}</span>
             )}
           </h2>
           {loading ? (
