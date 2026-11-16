@@ -28,6 +28,12 @@ export function useUrlShortener(): UseUrlShortenerReturn {
   );
   const [totalPages, setTotalPages] = useState<number>(1);
 
+  //reset the page number to 1 when the page size changes, to avoid invalid page numbers
+  const setPageSize = useCallback((size: number) => {
+    setCurrentPageSize(size);
+    setCurrentPage(1);
+  }, []);
+
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -73,6 +79,7 @@ export function useUrlShortener(): UseUrlShortenerReturn {
     try {
       await api.delete(alias);
       setUrls((prev) => prev.filter((u) => u.alias !== alias));
+      setCurrentPage(1); // Reset to first page after deletion
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to delete URL.");
     }
@@ -88,7 +95,7 @@ export function useUrlShortener(): UseUrlShortenerReturn {
     shorten,
     deleteUrl,
     clearLastCreated,
-    setPageSize: setCurrentPageSize,
+    setPageSize,
     setPageNumber: setCurrentPage,
     pageNumber: currentPage,
     pageSize: currentPageSize,
