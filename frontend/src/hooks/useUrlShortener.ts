@@ -12,33 +12,38 @@ interface UseUrlShortenerReturn {
   clearLastCreated: () => void;
   setPageSize: (count: number) => void;
   setPageNumber: (page: number) => void;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export function useUrlShortener(): UseUrlShortenerReturn {
   const [urls, setUrls] = useState<UrlListItem[]>([]);
-  const [pageNumber, setPageNumber] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPageSize, setCurrentPageSize] = useState<number>(10);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastCreated, setLastCreated] = useState<ShortenUrlResponse | null>(
     null,
   );
+  const [totalPages, setTotalPages] = useState<number>(1);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.listAll({
-        PageNumber: pageNumber,
-        PageSize: pageSize,
+      const { data, totalPages } = await api.listAll({
+        PageNumber: currentPage,
+        PageSize: currentPageSize,
       });
       setUrls(data ?? []);
+      setTotalPages(totalPages);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load URLs.");
     } finally {
       setLoading(false);
     }
-  }, [pageNumber, pageSize]);
+  }, [currentPage, currentPageSize]);
 
   useEffect(() => {
     fetchAll();
@@ -83,7 +88,10 @@ export function useUrlShortener(): UseUrlShortenerReturn {
     shorten,
     deleteUrl,
     clearLastCreated,
-    setPageSize,
-    setPageNumber,
+    setPageSize: setCurrentPageSize,
+    setPageNumber: setCurrentPage,
+    pageNumber: currentPage,
+    pageSize: currentPageSize,
+    totalPages,
   };
 }

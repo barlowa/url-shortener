@@ -4,7 +4,7 @@ import { ResultBanner } from './components/ResultBanner';
 import UrlTable from './components/UrlTable';
 
 export default function App() {
-  const { urls, loading, error, lastCreated, shorten, deleteUrl, clearLastCreated } =
+  const { urls, loading, error, lastCreated, shorten, deleteUrl, clearLastCreated, pageNumber, pageSize, totalPages, setPageNumber, setPageSize } =
     useUrlShortener();
 
   return (
@@ -47,7 +47,14 @@ export default function App() {
           {loading ? (
             <p className="loading">Loading...</p>
           ) : (
-            <UrlTable urls={urls} onDelete={deleteUrl} />
+            <UrlTable
+              urls={urls}
+              onDelete={deleteUrl}
+              totalPages={totalPages}
+              currentPage={pageNumber}
+              onPageChange={(page) => setPageNumber(page)}
+              pageSize={pageSize}
+              onPageSizeChange={(size) => setPageSize(size)} />
           )}
         </section>
       </main>
