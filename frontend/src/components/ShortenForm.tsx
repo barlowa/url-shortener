@@ -15,9 +15,35 @@ export function ShortenForm({ onSubmit, disabled }: ShortenFormProps) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setValidationError(null);
+
+    const trimmedUrl = fullUrl.trim();
+    const trimmedAlias = customAlias.trim();
+
+    if (!trimmedUrl) {
+      setValidationError('URL is required.');
+      return;
+    }
+
+    try {
+      const parsedUrl = new URL(trimmedUrl);
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+        throw new Error('Unsupported URL protocol.');
+      }
+    } catch {
+      setValidationError('Please enter a valid URL.');
+      return;
+    }
+
+    if (trimmedAlias && !/^[a-zA-Z0-9-]{2,64}$/.test(trimmedAlias)) {
+      setValidationError(
+        'Alias may only contain letters, numbers, and hyphens (2-64 characters).',
+      );
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await onSubmit(fullUrl.trim(), customAlias.trim() || undefined);
+      await onSubmit(trimmedUrl, trimmedAlias || undefined);
       setFullUrl('');
       setCustomAlias('');
     } finally {

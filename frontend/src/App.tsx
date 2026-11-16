@@ -1,9 +1,10 @@
 import { useUrlShortener } from './hooks/useUrlShortener';
 import { ShortenForm } from './components/ShortenForm';
 import { ResultBanner } from './components/ResultBanner';
+import UrlTable from './components/UrlTable';
 
 export default function App() {
-  const { urls, loading, error, lastCreated, shorten, deleteUrl, clearLastCreated } =
+  const { urls, loading, error, lastCreated, shorten, deleteUrl, clearLastCreated, pageNumber, pageSize, totalPages, setPageNumber, setPageSize } =
     useUrlShortener();
 
   return (
@@ -43,14 +44,24 @@ export default function App() {
               <span className="badge">{urls.length}</span>
             )}
           </h2>
-
-         
+          {loading ? (
+            <p className="loading">Loading...</p>
+          ) : (
+            <UrlTable
+              urls={urls}
+              onDelete={deleteUrl}
+              totalPages={totalPages}
+              currentPage={pageNumber}
+              onPageChange={(page) => setPageNumber(page)}
+              pageSize={pageSize}
+              onPageSizeChange={(size) => setPageSize(size)} />
+          )}
         </section>
       </main>
 
       <footer className="app-footer">
         <p>Snip URL Shortener</p>
       </footer>
-    </div>
+    </div >
   );
 }

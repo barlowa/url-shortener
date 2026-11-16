@@ -15,6 +15,17 @@ export interface UrlListItem {
   shortUrl: string;
 }
 
+export interface UrlListParams {
+  PageNumber: number;
+  PageSize: number;
+}
+export interface UrlListResponse {
+  data: UrlListItem[];
+  pageNumber: number;
+  pageSize: number;
+  totalRecords: number;
+  totalPages: number;
+}
 export interface ApiError {
   error: string;
 }
